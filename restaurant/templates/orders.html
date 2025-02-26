@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orders - Creamy Café</title>
+  <link rel="icon" type="image/x-icon" href="/media/images/P.ico">
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    .order-card {
+      position: relative;
+      background: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: #ff4d6d;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 1.5rem;
+      height: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .item-card {
+      max-width: 540px;
+      margin: auto;
+      background-color: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .item-card .row {
+      display: flex;
+      flex-wrap: nowrap;
+    }
+    .item-card .col-image {
+      flex: 0 0 33.33%;
+    }
+    .item-card .col-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .item-card .col-content {
+      flex: 0 0 66.66%;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-pink-100 font-sans">
+  <!-- Navbar -->
+  <nav class="bg-pink-500 shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-3xl font-extrabold text-white">Creamy Café</h1>
+    <ul class="flex space-x-6">
+      <li><a href="{% url 'home' %}" class="hover:text-pink-200 text-white">Home</a></li>
+      <li><a href="{% url 'menu' %}" class="hover:text-pink-200 text-white">Menu</a></li>
+      <li><a href="{% url 'contact' %}" class="hover:text-pink-200 text-white">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Orders Section -->
+  <section class="py-16 max-w-7xl mx-auto">
+    <h2 class="text-4xl font-bold text-center mb-12 text-pink-600">
+      Your Orders
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for order in orders %}
+      <!-- Order Card -->
+      <div id="order-card-{{ order.id }}" class="order-card">
+        <!-- Delete Button -->
+        <button onclick="deleteOrder({{ order.id }})" class="delete-btn">X</button>
+        <!-- Order Details -->
+        <h3 class="text-2xl font-bold mb-2">
+          Order {{ order.id }} 
+        </h3>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+        <p><strong>Address:</strong> {{ order.address }}</p>
+        <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
+        <p><strong>Ordered at:</strong> {{ order.created_at }}</p>
+
+        <h4 class="text-xl font-semibold mt-4 mb-2">Items:</h4>
+        <ul class="list-none pl-0 space-y-4">
+          {% for item in order.orderitem_set.all %}
+          <!-- Mini-card for each item -->
+          <li class="item-card">
+            <div class="row">
+              <!-- Image Section -->
+              <div class="col-image">
+                <img src="{{ item.menu_item.image.url }}" alt="{{ item.menu_item.name }}">
+              </div>
+              <!-- Content Section -->
+              <div class="col-content">
+                <h5 class="text-xl font-bold">{{ item.menu_item.name }}</h5>
+                <p class="text-gray-600">(x{{ item.quantity }}) - ${{ item.price }}</p>
+                <p class="text-sm text-gray-400">Last updated 3 mins ago</p>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% empty %}
+      <p class="text-center text-pink-600">No orders yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <script>
+    // Function to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Function to delete an order
+    function deleteOrder(orderId) {
+      if (!confirm("Are you sure you want to delete this order?")) {
+        return;
+      }
+      fetch("{% url 'delete_order' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie('csrftoken')
+        },
+        body: JSON.stringify({ order_id: orderId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          // Remove order card from DOM
+          const card = document.getElementById("order-card-" + orderId);
+          card.remove();
+        } else {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Creamy Café{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @media (max-width: 768px) {
+            .menu-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-pink-100 font-sans">
+    <!-- Navbar -->
+    <nav class="bg-pink-500 shadow-md p-4 flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-white">Creamy Café</h1>
+        <button id="menu-btn" class="md:hidden text-white text-2xl">☰</button>
+        <ul id="menu" class="hidden md:flex space-x-6">
+            <li><a href="{% url 'home' %}" class="hover:text-pink-200 text-white">Home</a></li>
+            <li><a href="{% url 'menu' %}" class="hover:text-pink-200 text-white">Menu</a></li>
+            <li><a href="{% url 'orders' %}" class="hover:text-pink-200 text-white">Orders</a></li>
+            <li><a href="{% url 'contact' %}" class="hover:text-pink-200 text-white">Contact</a></li>
+        </ul>
+    </nav>
+
+    <script>
+        document.getElementById('menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
+
+    <main class="p-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-pink-500 text-white text-center p-4 mt-8">
+        &copy; 2025 Creamy Café. All rights reserved.
+    </footer>
+</body>
+</html>

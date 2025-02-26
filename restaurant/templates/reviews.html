@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Reviews{% endblock %}
+
+{% block content %}
+    <h1>Customer Reviews</h1>
+    
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li>
+                    <strong>{{ review.name }}</strong> - {{ review.rating }}⭐ <br>
+                    "{{ review.comment }}"
+                    <br><small>{{ review.created_at|date:"d M, Y" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews yet.</p>
+    {% endif %}
+{% endblock %}

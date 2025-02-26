@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creamy Café - Menu</title>
+    <link rel="icon" type="image/x-icon" href="/media/images/P.ico">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            animation: fadeIn 2s ease-in-out;
+            background-color: #fff5f7;
+            font-family: 'Arial', sans-serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .menu-card {
+            background: linear-gradient(145deg, #ffe4e6, #fff);
+            border: none;
+            border-radius: 25px;
+            padding: 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            max-width: 300px;
+            margin: auto;
+            box-shadow: 0 10px 25px rgba(255, 77, 109, 0.4);
+            transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+        }
+        .menu-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.6);
+        }
+        .menu-card img {
+            border-radius: 20px;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .menu-card h4 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            color: #333;
+        }
+        .menu-card p {
+            font-size: 1rem;
+            color: #666;
+            margin: 0.5rem 0;
+        }
+        .price {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ff4d6d;
+            margin-top: 1rem;
+        }
+        .add-to-cart {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+        .add-to-cart button {
+            background-color: #ff4d6d;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .add-to-cart button:hover {
+            background-color: #e63e5d;
+        }
+    </style>
+</head>
+<body class="bg-pink-100 font-sans">
+    <nav class="bg-pink-500 shadow-md p-4 flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-white">Creamy Café</h1>
+        <ul class="flex space-x-6">
+            <li><a href="{% url 'home' %}" class="hover:text-pink-200 text-white">Home</a></li>
+            <li><a href="{% url 'orders' %}" class="hover:text-pink-200 text-white">Orders</a></li>
+            <li><a href="{% url 'contact' %}" class="hover:text-pink-200 text-white">Contact</a></li>
+        </ul>
+    </nav>
+    <section class="text-center relative">
+        <img src="/media/images/r.png" alt="Delicious Menu" class="w-full h-96 object-cover rounded-lg shadow-lg mt-[-4rem]">
+    </section>
+    
+    <section class="py-16">
+        <h3 class="text-4xl font-bold text-center mb-12 text-pink-600">Our Menu</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 max-w-7xl mx-auto">
+            {% for item in items %}
+            <div class="menu-card">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                {% endif %}
+                <h4>{{ item.name }}</h4>
+                <p>{{ item.description }}</p>
+                <div class="add-to-cart">
+                    <span class="price">${{ item.price }}</span>
+                    <button onclick="addToOrder('{{ item.id }}', '{{ item.price }}')" 
+                        class="bg-green-500 text-white rounded-full p-2 mt-2">+</button>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+
+     
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        function addToOrder(itemId, itemPrice) {
+            fetch("{% url 'add_to_order' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                body: JSON.stringify({ "item_id": itemId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "need_info") {
+                    showCustomerInfoModal(itemId);
+                } else if(data.status === "success") {
+                    alert("Product added to order!");
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+        
+        function showCustomerInfoModal(itemId) {
+            let email = prompt("Enter your email:");
+            let phone = prompt("Enter your phone number:");
+            let address = prompt("Enter your address:");
+            
+            if(email && phone && address) {
+                fetch("{% url 'save_customer_info' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ "email": email, "phone": phone, "address": address })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === "success") {
+                        addToOrder(itemId);
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            } else {
+                alert("Please fill in all fields.");
+            }
+        }
+    </script>
+</body>
+</html>

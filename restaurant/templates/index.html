@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+{% load static %}
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creamy Café</title>
+    <link rel="icon" type="image/x-icon" href="/media/images/P.ico">
+
+    
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .hover-glow:hover {
+            box-shadow: 0px 0px 20px rgba(255, 77, 109, 0.8);
+            transform: scale(1.05);
+            transition: all 0.3s ease-in-out;
+        }
+        .text-glow {
+            text-shadow: 0px 0px 10px rgba(255, 77, 109, 0.8);
+        }
+        .slide-in {
+            animation: slideIn 1s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .category-card {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            box-shadow: 0px 0px 20px rgba(255, 77, 109, 0.8);
+            transition: transform 0.3s ease-in-out, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        .category-card:hover {
+            transform: scale(1.2);
+            background: linear-gradient(135deg, #ff77a9, #ffb6c1);
+        }
+        .category-card.fade-in {
+            opacity: 1;
+        }
+        .navbar-link {
+            position: relative;
+            padding-bottom: 5px;
+        }
+        .navbar-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 2px;
+            width: 0;
+            background-color: #ff4d6d;
+            transition: width 0.3s ease;
+        }
+        .navbar-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-pink-100 font-sans">
+ 
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-glow">Creamy Café</h1>
+        <ul class="flex space-x-6">
+            
+            <li><a href="{% url 'menu' %}" class="navbar-link hover:text-pink-500">Menu</a></li>
+            <li><a href="{% url 'orders' %}" class="navbar-link hover:text-pink-500">Order</a></li>
+
+
+            <li><a href="{% url 'contact' %}" class="navbar-link hover:text-pink-500">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section with Background Image -->
+    <section class="text-center py-40 bg-cover bg-center slide-in" style="background-image: url('/media/images/Glow.png');">
+        <div class="bg-white bg-opacity-70 inline-block p-8 rounded-lg">
+            <h2 class="text-4xl font-extrabold text-gray-800 text-glow">Something Yummy For All</h2>
+            <p class="text-lg text-gray-600 my-4">Walnut Honey Ice Cream</p>
+            <button onclick="orderNow()" class="mt-4 bg-pink-500 text-white px-6 py-2 rounded-full hover-glow">Order Now</button>
+        </div>
+    </section>
+
+    <!-- Hero Section -->
+    <section class="text-center py-16 bg-white slide-in">
+        <h2 class="text-4xl font-extrabold text-gray-800 text-glow">Delight in Every Bite</h2>
+        <p class="text-lg text-gray-600 my-4">Indulge yourself with our sweet treats!</p>
+    </section>
+
+    <!-- Popular Categories -->
+    <section class="py-16 slide-in">
+        <h3 class="text-3xl font-bold text-center mb-8 text-glow">Popular Categories</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 max-w-6xl mx-auto">
+            {% for category in categories %}
+            <div class="text-center">
+                <a href="{% url 'menu' %}?category={{ category.name }}">
+                    <div class="category-card" id="card-{{ forloop.counter }}">
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-24 h-24 rounded-full">
+                    </div>
+                    <p class="mt-4 font-medium text-glow">{{ category.name }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <script>
+        function orderNow() {
+            alert('Thank you for visit 🍦');
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const cards = document.querySelectorAll(".category-card");
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add("fade-in");
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
