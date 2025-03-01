@@ -36,31 +36,45 @@ def add_to_order(request):
         data = json.loads(request.body)
         item_id = data.get("item_id")
 
+        # Get customer details from the session
         customer_email = request.session.get("customer_email")
         customer_phone = request.session.get("customer_phone")
         customer_address = request.session.get("customer_address")
         
+        # If customer details are missing, ask for them
         if not (customer_email and customer_phone and customer_address):
             return JsonResponse({
                 "status": "need_info",
                 "message": "Please enter your email, phone, and address."
             })
 
+        # Get the selected menu item
         menu_item = MenuItem.objects.get(id=item_id)
-        
-        order = Order.objects.create(
+
+        # Create or get the order for the current customer
+        order, created = Order.objects.get_or_create(
             customer_name="Guest",
             email=customer_email,
             phone=customer_phone,
             address=customer_address,
-            total_price=menu_item.price 
+            defaults={'total_price': 0}
         )
-        OrderItem.objects.create(
+
+        # Add the item to the order (or update quantity if it already exists)
+        order_item, item_created = OrderItem.objects.get_or_create(
             order=order,
             menu_item=menu_item,
-            quantity=1,
-            price=menu_item.price
+            defaults={'quantity': 1, 'price': menu_item.price}
         )
+
+        if not item_created:
+            order_item.quantity += 1
+            order_item.save()
+
+        # Update the total price of the order
+        order.total_price += menu_item.price
+        order.save()
+
         return JsonResponse({"status": "success"})
     except MenuItem.DoesNotExist:
         return JsonResponse({"status": "error", "message": "Product not found."})
